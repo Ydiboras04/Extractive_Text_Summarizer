@@ -1,4 +1,4 @@
-# This is a textrank implementation in python for extraction text summarization and keyword extraction in english language. 
+# This is a textrank implementation in python for extraction text summarization in english language. 
 # It is based on the paper "TextRank: Bringing Order into Texts" by Rada Mihalcea and Paul Tarau.
 
 import re
@@ -90,3 +90,22 @@ def page_rank(matrix: list[list[float]], damping_factor: float = 0.85, max_iter:
             break
 
     return scores
+
+def summarize(text: str, num_sentences: int = 3, stopwords: set[str] = STOPWORDS) -> list[str]:
+    sentences = split_sentences(text)
+    n = len(sentences)
+    if n <= num_sentences:
+        return sentences
+
+    matrix = build_similarity_graph(sentences, stopwords)
+    scores = page_rank(matrix)
+
+    # on garde l'indice d'origine pour pouvoir re-trier dans l'ordre du texte
+    ranked = sorted(range(n), key=lambda i: scores[i], reverse=True)
+    top = sorted(ranked[:num_sentences])
+
+    return [sentences[i] for i in top]
+
+if __name__ == "__main__":
+    text = "The cat sleeps on the sofa. The dog sleeps on the bed. Stars shine at night. The cat and the dog are friends."
+    print(summarize(text, num_sentences=2))
